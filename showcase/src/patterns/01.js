@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import mojs from 'mo-js'
 
 import styles from './index.css'
 
@@ -14,26 +15,29 @@ const initialState = {
  */
 const withClapAnimation = WrappedComponent => {
   class WithClapAnimation extends React.Component {
-    // This handles some animation logic
-    animate = () => {
-      console.log('%c Hiệu ứng nè! ', 'background: yellow; color: black;')
+    // * This handles some animation logic
+    // animate = () => {
+    //   console.log('%c Hiệu ứng nè! ', 'background: yellow; color: black;')
+    // }
+    state = {
+      animationTimeline: new mojs.Timeline()
     }
 
     render() {
-      return <WrappedComponent {...this.props} animate={this.animate} />
+      return <WrappedComponent {...this.props} animationTimeline={this.state.animationTimeline} />
     }
   }
 
   return WithClapAnimation
 }
 
-const MediumClap = ({ animate }) => {
+const MediumClap = ({ animationTimeline }) => {
   const [clapState, setClapState] = useState(initialState)
   const { count, countTotal, isClicked } = clapState
   const MAXIMUM_USER_CLAP = 50
 
   const handleClapClick = () => {
-    animate()
+    animationTimeline.replay()
 
     setClapState(prevState => ({
       isClicked: true,
