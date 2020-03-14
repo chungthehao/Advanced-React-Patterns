@@ -19,8 +19,23 @@ const withClapAnimation = WrappedComponent => {
     // animate = () => {
     //   console.log('%c Hiệu ứng nè! ', 'background: yellow; color: black;')
     // }
+    initialAnimationTimeline = new mojs.Timeline()
     state = {
-      animationTimeline: new mojs.Timeline()
+      animationTimeline: this.initialAnimationTimeline
+    }
+
+    componentDidMount() {
+      // Tạo animation property rồi add vô timeline obj
+      const scaleButton = new mojs.Html({
+        el: '#clap',
+        duration: 300,
+        scale: {1.3: 1},
+        easing: mojs.easing.ease.out 
+      })
+
+      const newAnimationTimeline = this.initialAnimationTimeline.add([scaleButton])
+
+      this.setState({ animationTimeline: newAnimationTimeline })
     }
 
     render() {
@@ -46,7 +61,7 @@ const MediumClap = ({ animationTimeline }) => {
     }))
   }
 
-  return <button className={styles.clap} onClick={handleClapClick}>
+  return <button id='clap' className={styles.clap} onClick={handleClapClick}>
     <ClapIcon isClicked={isClicked} />
     <ClapCount count={count} />
     <CountTotal countTotal={countTotal} />
