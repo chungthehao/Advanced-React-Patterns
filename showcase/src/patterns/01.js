@@ -8,12 +8,33 @@ const initialState = {
   countTotal: 56,
   isClicked: false
 }
-const MediumClap = () => {
+
+/**
+ * Higher Order Component
+ */
+const withClapAnimation = WrappedComponent => {
+  class WithClapAnimation extends React.Component {
+    // This handles some animation logic
+    animate = () => {
+      console.log('%c Hiệu ứng nè! ', 'background: yellow; color: black;')
+    }
+
+    render() {
+      return <WrappedComponent {...this.props} animate={this.animate} />
+    }
+  }
+
+  return WithClapAnimation
+}
+
+const MediumClap = ({ animate }) => {
   const [clapState, setClapState] = useState(initialState)
   const { count, countTotal, isClicked } = clapState
   const MAXIMUM_USER_CLAP = 50
 
   const handleClapClick = () => {
+    animate()
+
     setClapState(prevState => ({
       isClicked: true,
       count: Math.min(prevState.count + 1, MAXIMUM_USER_CLAP),
@@ -52,4 +73,13 @@ const CountTotal = ({ countTotal }) => {
   return <span className={styles.total}>{countTotal}</span>
 }
 
-export default MediumClap
+/**
+ * Usage
+ */
+const Usage = () => {
+  const AnimatedMediumClap = withClapAnimation(MediumClap)
+  return <AnimatedMediumClap />
+}
+
+export default Usage
+// export default withClapAnimation(MediumClap)
