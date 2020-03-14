@@ -33,6 +33,10 @@ const withClapAnimation = WrappedComponent => {
         easing: mojs.easing.ease.out 
       })
 
+      // Fix initial scale 1.3
+      const clap = document.getElementById('clap')
+      clap.style.transform = 'scale(1,1)'
+
       const newAnimationTimeline = this.initialAnimationTimeline.add([scaleButton])
 
       this.setState({ animationTimeline: newAnimationTimeline })
