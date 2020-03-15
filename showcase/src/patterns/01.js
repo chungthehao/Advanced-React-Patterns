@@ -35,6 +35,18 @@ const withClapAnimation = WrappedComponent => {
         easing: mojs.easing.ease.out 
       })
 
+      // Tạo animation cho count rồi add vô timeline
+      const countAnimation = new mojs.Html({
+        el: '#clapCount',
+        duration: tlDuration,
+        opacity: {0: 1},
+        y: {0: -30}
+      }).then({
+        delay: 0.5 * tlDuration,
+        opacity: {1: 0},
+        y: -80
+      })
+
       // Tạo animation cho CountTotal rồi add vô timeline
       const countTotalAnimation = new mojs.Html({
         el: '#clapCountTotal',
@@ -48,7 +60,7 @@ const withClapAnimation = WrappedComponent => {
       const clap = document.getElementById('clap')
       clap.style.transform = 'scale(1,1)'
 
-      const newAnimationTimeline = this.initialAnimationTimeline.add([scaleButton, countTotalAnimation])
+      const newAnimationTimeline = this.initialAnimationTimeline.add([scaleButton, countTotalAnimation, countAnimation])
 
       this.setState({ animationTimeline: newAnimationTimeline })
     }
@@ -100,7 +112,7 @@ const ClapIcon = ({ isClicked }) => {
 }
 
 const ClapCount = ({ count }) => {
-  return <span className={styles.count}>+ {count}</span>
+  return <span id='clapCount' className={styles.count}>+ {count}</span>
 }
 
 const CountTotal = ({ countTotal }) => {
