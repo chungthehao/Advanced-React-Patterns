@@ -35,6 +35,41 @@ const withClapAnimation = WrappedComponent => {
         easing: mojs.easing.ease.out 
       })
 
+      // Tạo burst tam giác, rồi add vô timeline
+      const triangleBurst = new mojs.Burst({
+        parent: '#clap', // burst sẽ phát ra từ parent này
+        radius: {50: 95}, // bắt đầu từ đâu phát ra tới đâu thì mất
+        count: 5, // phát ra mấy mảnh
+        angle: 30,
+        children: {
+          shape: 'polygon', // sẽ ra tam giác
+          radius: {6: 0},
+          angle: 90,
+          stroke: 'rgba(211,54,0,0.5)',
+          strokeWidth: 2,
+          speed: 0.2,
+          delay: 30,
+          duration: tlDuration,
+          easing: mojs.easing.bezier(0.1, 1, 0.3, 1),
+        }
+      })
+
+      const circleBurst = new mojs.Burst({
+        parent: '#clap', // burst sẽ phát ra từ parent này
+        radius: {50: 75}, // bắt đầu từ đâu phát ra tới đâu thì mất
+        count: 5, // phát ra mấy mảnh
+        angle: 25,
+        duration: tlDuration,
+        children: {
+          shape: 'circle',
+          radius: {3: 0},
+          fill: 'rgba(149,165,166,0.5)',
+          delay: 30,
+          speed: 0.2,
+          easing: mojs.easing.bezier(0.1, 1, 0.3, 1),
+        }
+      })
+
       // Tạo animation cho count rồi add vô timeline
       const countAnimation = new mojs.Html({
         el: '#clapCount',
@@ -60,7 +95,7 @@ const withClapAnimation = WrappedComponent => {
       const clap = document.getElementById('clap')
       clap.style.transform = 'scale(1,1)'
 
-      const newAnimationTimeline = this.initialAnimationTimeline.add([scaleButton, countTotalAnimation, countAnimation])
+      const newAnimationTimeline = this.initialAnimationTimeline.add([scaleButton, countTotalAnimation, countAnimation, triangleBurst, circleBurst])
 
       this.setState({ animationTimeline: newAnimationTimeline })
     }
