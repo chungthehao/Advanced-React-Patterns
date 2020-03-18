@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useLayoutEffect, useCallback } from 'react';
 import mojs from 'mo-js';
 
 import styles from './index.css';
@@ -16,11 +16,11 @@ const tlInitialState = new mojs.Timeline(); // để mỗi lần chạy lại us
 const useClapAnimation = ({ clapEl, clapCountEl, clapTotalEl }) => {
   const [animationTimeline, setAnimationTimeline] = useState(tlInitialState);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!clapEl || !clapCountEl || !clapTotalEl) {
       return;
     }
-    
+
     const tlDuration = 300;
 
     // Tạo animation property rồi add vô timeline obj
@@ -124,7 +124,7 @@ const MediumClap = () => {
       ...prevRefState,
       [node.dataset.refkey]: node
     }))
-  })
+  }, [])
 
   const animationTimeline = useClapAnimation({ 
     clapEl: clapRef, 
