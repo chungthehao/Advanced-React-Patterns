@@ -14,9 +14,11 @@ const initialState = {
  */
 const tlInitialState = new mojs.Timeline(); // để mỗi lần chạy lại useClapAnimation, ko cần chạy lại new mojs.Timeline()
 const useClapAnimation = ({ clapEl, clapCountEl, clapTotalEl }) => {
+  console.log('useClapAnimation useClapAnimation');
   const [animationTimeline, setAnimationTimeline] = useState(tlInitialState);
 
   useLayoutEffect(() => {
+    console.log('useLayoutEffect useLayoutEffect', { clapEl, clapCountEl, clapTotalEl });
     if (!clapEl || !clapCountEl || !clapTotalEl) {
       return;
     }
@@ -119,6 +121,8 @@ const MediumClap = () => {
 
   // Gói trong useCallback để lúc re-render ko tạo reference mới gây re-render child-component
   const setRef = useCallback(node => {
+    // Chạy 3 lần lúc đầu, vì có 3 ref={setRef} ở JSX
+    console.log('setRef setRef setRef setRef setRef setRef setRef');
     // Lưu node này vô state
     setRefState(prevRefState => ({
       ...prevRefState,
@@ -126,7 +130,7 @@ const MediumClap = () => {
     }))
   }, [])
 
-  const animationTimeline = useClapAnimation({ 
+  const animationTimeline = useClapAnimation({
     clapEl: clapRef, 
     clapCountEl: clapCountRef, 
     clapTotalEl:  clapTotalRef
