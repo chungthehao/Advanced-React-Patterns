@@ -143,7 +143,7 @@ const MediumClap = ({ children, onClap }) => {
 
   useEffect(() => {
     console.log('onClap onClap onClap onClap')
-    onClap(clapState)
+    onClap && onClap(clapState); // onClap &&: check nếu có truyền onClap
   }, [count]); // count changes ~ click clap
 
   const handleClapClick = () => {
