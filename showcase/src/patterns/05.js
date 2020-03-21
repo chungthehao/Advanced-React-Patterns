@@ -13,9 +13,8 @@ const initialState = {
 /**
  * Custom Hook for animation
  */
-const tlInitialState = new mojs.Timeline(); // để mỗi lần chạy lại useClapAnimation, ko cần chạy lại new mojs.Timeline()
 const useClapAnimation = ({ clapEl, clapCountEl, clapTotalEl }) => {
-  const [animationTimeline, setAnimationTimeline] = useState(tlInitialState);
+  const [animationTimeline, setAnimationTimeline] = useState(new mojs.Timeline());
 
   useLayoutEffect(() => {
     if (!clapEl || !clapCountEl || !clapTotalEl) {
@@ -257,6 +256,11 @@ const Usage = () => {
 
   return (
       <div style={{ width: '100%' }}>
+        <MediumClap onClap={handleClap} className={userCustomStyles.clap}>
+            <MediumClap.Icon />
+            <MediumClap.Total className={userCustomStyles.total} />
+            <MediumClap.Count className={userCustomStyles.count} />
+        </MediumClap>
         <MediumClap onClap={handleClap} className={userCustomStyles.clap}>
             <MediumClap.Icon />
             <MediumClap.Total className={userCustomStyles.total} />
