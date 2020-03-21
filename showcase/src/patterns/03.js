@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useCallback, createContext, useContext, useMemo } from 'react';
+import React, { useState, useLayoutEffect, useCallback, createContext, useContext, useMemo, useEffect } from 'react';
 import mojs from 'mo-js';
 
 import styles from './index.css';
@@ -14,11 +14,11 @@ const initialState = {
  */
 const tlInitialState = new mojs.Timeline(); // để mỗi lần chạy lại useClapAnimation, ko cần chạy lại new mojs.Timeline()
 const useClapAnimation = ({ clapEl, clapCountEl, clapTotalEl }) => {
-  console.log('useClapAnimation useClapAnimation');
+  //console.log('useClapAnimation useClapAnimation');
   const [animationTimeline, setAnimationTimeline] = useState(tlInitialState);
 
   useLayoutEffect(() => {
-    console.log('useLayoutEffect useLayoutEffect', { clapEl, clapCountEl, clapTotalEl });
+    //console.log('useLayoutEffect useLayoutEffect', { clapEl, clapCountEl, clapTotalEl });
     if (!clapEl || !clapCountEl || !clapTotalEl) {
       return;
     }
@@ -116,7 +116,9 @@ const useClapAnimation = ({ clapEl, clapCountEl, clapTotalEl }) => {
 const MediumClapContext = createContext()
 const { Provider } = MediumClapContext
 
-const MediumClap = ({ children }) => {
+const MediumClap = ({ children, onClap }) => {
+  console.log('MEDIUM CLAP IS RENDERED!!!'); // chạy 2 lần, khi click clap
+
   const [clapState, setClapState] = useState(initialState);
   const { count/*, countTotal, isClicked*/ } = clapState;
   const MAXIMUM_USER_CLAP = 50;
@@ -126,7 +128,6 @@ const MediumClap = ({ children }) => {
   // Gói trong useCallback để lúc re-render ko tạo reference mới gây re-render child-component
   const setRef = useCallback(node => {
     // Chạy 3 lần lúc đầu, vì có 3 ref={setRef} ở JSX
-    console.log('setRef setRef setRef setRef setRef setRef setRef');
     // Lưu node này vô state
     setRefState(prevRefState => ({
       ...prevRefState,
@@ -139,6 +140,11 @@ const MediumClap = ({ children }) => {
     clapCountEl: clapCountRef, 
     clapTotalEl:  clapTotalRef
   });
+
+  useEffect(() => {
+    console.log('onClap onClap onClap onClap')
+    onClap(clapState)
+  }, [count]); // count changes ~ click clap
 
   const handleClapClick = () => {
     animationTimeline.replay();
@@ -213,11 +219,21 @@ MediumClap.Count = ClapCount
  * Usage
  */
 const Usage = () => {
-  return <MediumClap>
-      <MediumClap.Icon />
-      <MediumClap.Total />
-      <MediumClap.Count />
-  </MediumClap>;
+    const [count, setCount] = useState(0)
+    const handleClap = clapState => {
+        setCount(clapState.count)
+    }
+
+  return (
+      <div style={{ width: '100%' }}>
+        <MediumClap onClap={handleClap}>
+            <MediumClap.Icon />
+            <MediumClap.Total />
+            <MediumClap.Count />
+        </MediumClap>
+        <div className={styles.info}>You have clapped {count}</div>
+      </div>
+  );
 };
 
 export default Usage;
