@@ -152,8 +152,19 @@ const useClapState = (initialState = INITIAL_STATE) => {
     }));
   }, [count, countTotal]);
 
-  const togglerProps = { handleClick: updateClapState };
-  const counterProps = { count };
+  // Props collection for 'click'
+  const togglerProps = {
+    handleClick: updateClapState,
+    'aria-pressed': isClicked
+  };
+
+  // Props collection for 'count'
+  const counterProps = {
+    count,
+    'aria-valuemax': MAXIMUM_USER_CLAP,
+    'aria-valuemin': 0,
+    'aria-valuenow': count
+  };
 
   return { clapState, updateClapState, togglerProps, counterProps };
 };
