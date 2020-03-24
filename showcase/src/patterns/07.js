@@ -152,21 +152,21 @@ const useClapState = (initialState = INITIAL_STATE) => {
     }));
   }, [count, countTotal]);
 
-  // Props collection for 'click'
-  const togglerProps = {
+  // props getter
+  const getTogglerProps = () => ({
     handleClick: updateClapState,
     'aria-pressed': isClicked
-  };
+  });
 
-  // Props collection for 'count'
-  const counterProps = {
+  // props getter
+  const getCounterProps = () => ({
     count,
     'aria-valuemax': MAXIMUM_USER_CLAP,
     'aria-valuemin': 0,
     'aria-valuenow': count
-  };
+  });
 
-  return { clapState, updateClapState, togglerProps, counterProps };
+  return { clapState, updateClapState, getTogglerProps, getCounterProps };
 };
 
 /**
@@ -240,8 +240,8 @@ const Usage = () => {
   const {
     clapState: { count, countTotal, isClicked },
     updateClapState,
-    togglerProps,
-    counterProps
+    getTogglerProps,
+    getCounterProps
   } = useClapState();
   const animationTimeline = useClapAnimation({
     clapEl: clapRef,
@@ -253,12 +253,16 @@ const Usage = () => {
   }, [count]);
 
   return (
-    <ClapContainer setRef={setRef} data-refkey='clapRef' {...togglerProps}>
+    <ClapContainer setRef={setRef} data-refkey='clapRef' {...getTogglerProps()}>
       {/* <ClapIcon isClicked={isClicked} /> */}
       <span style={{ fontSize: '40px' }}>🦡</span>
 
-      <ClapCount setRef={setRef} data-refkey='clapCountRef' {...counterProps} />
-      <UserDefineClapCountComponent {...counterProps} />
+      <ClapCount
+        setRef={setRef}
+        data-refkey='clapCountRef'
+        {...getCounterProps()}
+      />
+      <UserDefineClapCountComponent {...getCounterProps()} />
 
       <CountTotal
         setRef={setRef}
