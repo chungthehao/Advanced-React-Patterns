@@ -131,6 +131,14 @@ const useDOMRef = () => {
   return [DOMRef, setRef];
 };
 
+// 1. Trả về function vì <button onClick={1 hàm gì đó} />
+// 2. args là 1 array chứa tất cả biến đc truyền vô (có thể là $event,...), mình truyền đúng các biến đó vô các fn để nó chạy
+const callFnsInSequence = (...fns) => {
+  return (...args) => {
+    fns.forEach(fn => fn && fn(...args));
+  };
+};
+
 /**
  * Custom hook for useClapState
  */
@@ -153,17 +161,19 @@ const useClapState = (initialState = INITIAL_STATE) => {
   }, [count, countTotal]);
 
   // props getter
-  const getTogglerProps = () => ({
-    handleClick: updateClapState,
-    'aria-pressed': isClicked
+  const getTogglerProps = ({ handleClick, ...otherProps }) => ({
+    handleClick: callFnsInSequence(updateClapState, handleClick),
+    'aria-pressed': isClicked,
+    ...otherProps
   });
 
   // props getter
-  const getCounterProps = () => ({
+  const getCounterProps = ({ ...otherProps }) => ({
     count,
     'aria-valuemax': MAXIMUM_USER_CLAP,
     'aria-valuemin': 0,
-    'aria-valuenow': count
+    'aria-valuenow': count,
+    ...otherProps
   });
 
   return { clapState, updateClapState, getTogglerProps, getCounterProps };
@@ -252,8 +262,17 @@ const Usage = () => {
     animationTimeline.replay();
   }, [count]);
 
+  const handleClick = () => console.log('%c CLICKED!!!', 'background:yellow');
+
   return (
-    <ClapContainer setRef={setRef} data-refkey='clapRef' {...getTogglerProps()}>
+    <ClapContainer
+      setRef={setRef}
+      data-refkey='clapRef'
+      {...getTogglerProps({
+        'aria-pressed': false,
+        handleClick
+      })}
+    >
       {/* <ClapIcon isClicked={isClicked} /> */}
       <span style={{ fontSize: '40px' }}>🦡</span>
 
