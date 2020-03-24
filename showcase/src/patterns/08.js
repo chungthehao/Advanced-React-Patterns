@@ -131,6 +131,14 @@ const useDOMRef = () => {
   return [DOMRef, setRef];
 };
 
+// 1. Trả về function vì <button onClick={1 hàm gì đó} />
+// 2. args là 1 array chứa tất cả biến đc truyền vô (có thể là $event,...), mình truyền đúng các biến đó vô các fn để nó chạy
+const callFnsInSequence = (...fns) => {
+  return (...args) => {
+    fns.forEach(fn => fn && fn(...args));
+  };
+};
+
 /**
  * Custom hook for useClapState
  */
@@ -152,21 +160,23 @@ const useClapState = (initialState = INITIAL_STATE) => {
     }));
   }, [count, countTotal]);
 
-  // Props collection for 'click'
-  const togglerProps = {
-    handleClick: updateClapState,
-    'aria-pressed': isClicked
-  };
+  // props getter
+  const getTogglerProps = ({ handleClick, ...otherProps }) => ({
+    handleClick: callFnsInSequence(updateClapState, handleClick),
+    'aria-pressed': isClicked,
+    ...otherProps
+  });
 
-  // Props collection for 'count'
-  const counterProps = {
+  // props getter
+  const getCounterProps = ({ ...otherProps }) => ({
     count,
     'aria-valuemax': MAXIMUM_USER_CLAP,
     'aria-valuemin': 0,
-    'aria-valuenow': count
-  };
+    'aria-valuenow': count,
+    ...otherProps
+  });
 
-  return { clapState, updateClapState, togglerProps, counterProps };
+  return { clapState, updateClapState, getTogglerProps, getCounterProps };
 };
 
 /**
@@ -240,8 +250,8 @@ const Usage = () => {
   const {
     clapState: { count, countTotal, isClicked },
     updateClapState,
-    togglerProps,
-    counterProps
+    getTogglerProps,
+    getCounterProps
   } = useClapState();
   const animationTimeline = useClapAnimation({
     clapEl: clapRef,
@@ -252,13 +262,26 @@ const Usage = () => {
     animationTimeline.replay();
   }, [count]);
 
+  const handleClick = () => console.log('%c CLICKED!!!', 'background:yellow');
+
   return (
-    <ClapContainer setRef={setRef} data-refkey='clapRef' {...togglerProps}>
+    <ClapContainer
+      setRef={setRef}
+      data-refkey='clapRef'
+      {...getTogglerProps({
+        'aria-pressed': false,
+        handleClick
+      })}
+    >
       {/* <ClapIcon isClicked={isClicked} /> */}
       <span style={{ fontSize: '40px' }}>🦡</span>
 
-      <ClapCount setRef={setRef} data-refkey='clapCountRef' {...counterProps} />
-      <UserDefineClapCountComponent {...counterProps} />
+      <ClapCount
+        setRef={setRef}
+        data-refkey='clapCountRef'
+        {...getCounterProps()}
+      />
+      <UserDefineClapCountComponent {...getCounterProps()} />
 
       <CountTotal
         setRef={setRef}
