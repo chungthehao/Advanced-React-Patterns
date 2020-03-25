@@ -141,6 +141,17 @@ const callFnsInSequence = (...fns) => {
 };
 
 /**
+ * Custom hook for getting the previous state/prop
+ */
+const usePrevious = value => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+};
+
+/**
  * Custom hook for useClapState
  */
 const INITIAL_STATE = {
@@ -168,9 +179,15 @@ const useClapState = (initialState = INITIAL_STATE) => {
    * - Dùng useCallback để tối ưu và lẽ ra, dependencies là mảng rỗng []
    * - Né eslint báo thì cho thêm setClapState (đã ko đổi sẵn) và initialStateRef
    */
+  const resetRef = useRef(0);
+  const prevCount = usePrevious(count);
   const reset = useCallback(() => {
-    setClapState(initialStateRef.current);
-  }, [setClapState]);
+    // if there's a change to state
+    if (prevCount !== count) {
+      setClapState(initialStateRef.current);
+      resetRef.current++;
+    }
+  }, [setClapState, prevCount, count]);
 
   // props getter
   const getTogglerProps = ({ handleClick, ...otherProps }) => ({
@@ -193,7 +210,8 @@ const useClapState = (initialState = INITIAL_STATE) => {
     updateClapState,
     getTogglerProps,
     getCounterProps,
-    reset
+    reset,
+    resetDep: resetRef.current
   };
 };
 
@@ -270,21 +288,33 @@ const userInitialState = {
 };
 const Usage = () => {
   const [{ clapRef, clapCountRef, clapTotalRef }, setRef] = useDOMRef();
+
   const {
     clapState: { count, countTotal, isClicked },
     updateClapState,
     getTogglerProps,
     getCounterProps,
-    reset
+    reset,
+    resetDep
   } = useClapState(userInitialState);
+
   const animationTimeline = useClapAnimation({
     clapEl: clapRef,
     clapCountEl: clapCountRef,
     clapTotalEl: clapTotalRef
   });
+
   useEffectAfterMount(() => {
     animationTimeline.replay();
   }, [count]);
+
+  // Sau khi animation xong, user muốn update thông tin reset tới db (1 vd cho side effect)
+  const [uploadingReset, setUpload] = useState(false); // giống như isLoading riêng cho reset
+  useEffectAfterMount(() => {
+    setUpload(true);
+    const id = setTimeout(() => setUpload(false), 3000);
+    return () => clearTimeout(id);
+  }, [resetDep]); // resetDep là 1 cái tào lao gì đó sẽ thay đổi khi user nhấn reset
 
   const handleClick = () => console.log('%c CLICKED!!!', 'background:yellow');
 
@@ -319,6 +349,9 @@ const Usage = () => {
         </button>
         <pre className={userStyles.resetMsg}>
           {JSON.stringify({ count, countTotal, isClicked })}
+        </pre>
+        <pre className={userStyles.resetMsg}>
+          {uploadingReset ? `The reset data is uploading... ${resetDep}` : ''}
         </pre>
       </section>
     </div>
