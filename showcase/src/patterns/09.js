@@ -8,6 +8,7 @@ import React, {
 import mojs from 'mo-js';
 
 import styles from './index.css';
+import userStyles from './usage.css';
 
 /**
  * Custom Hook for animation
@@ -151,6 +152,7 @@ const useClapState = (initialState = INITIAL_STATE) => {
   const MAXIMUM_USER_CLAP = 50;
   const [clapState, setClapState] = useState(initialState);
   const { count, countTotal, isClicked } = clapState;
+  const initialStateRef = useRef(initialState);
 
   const updateClapState = useCallback(() => {
     setClapState(({ count, countTotal }) => ({
@@ -159,6 +161,16 @@ const useClapState = (initialState = INITIAL_STATE) => {
       countTotal: count < MAXIMUM_USER_CLAP ? countTotal + 1 : countTotal
     }));
   }, [count, countTotal]);
+
+  /**
+   * - Để Reset state về trạng thái ban đầu
+   * - Chỉ cần khởi tạo 1 lần, ko cần cập nhật gì khi custom hook này chạy lại
+   * - Dùng useCallback để tối ưu và lẽ ra, dependencies là mảng rỗng []
+   * - Né eslint báo thì cho thêm setClapState (đã ko đổi sẵn) và initialStateRef
+   */
+  const reset = useCallback(() => {
+    setClapState(initialStateRef.current);
+  }, [setClapState]);
 
   // props getter
   const getTogglerProps = ({ handleClick, ...otherProps }) => ({
@@ -176,7 +188,13 @@ const useClapState = (initialState = INITIAL_STATE) => {
     ...otherProps
   });
 
-  return { clapState, updateClapState, getTogglerProps, getCounterProps };
+  return {
+    clapState,
+    updateClapState,
+    getTogglerProps,
+    getCounterProps,
+    reset
+  };
 };
 
 /**
@@ -246,9 +264,9 @@ const CountTotal = ({ countTotal, setRef, ...restProps }) => {
  * Usage
  */
 const userInitialState = {
-  count: 33,
+  count: 0,
   countTotal: 1000,
-  isClicked: true
+  isClicked: false
 };
 const Usage = () => {
   const [{ clapRef, clapCountRef, clapTotalRef }, setRef] = useDOMRef();
@@ -256,7 +274,8 @@ const Usage = () => {
     clapState: { count, countTotal, isClicked },
     updateClapState,
     getTogglerProps,
-    getCounterProps
+    getCounterProps,
+    reset
   } = useClapState(userInitialState);
   const animationTimeline = useClapAnimation({
     clapEl: clapRef,
@@ -270,29 +289,39 @@ const Usage = () => {
   const handleClick = () => console.log('%c CLICKED!!!', 'background:yellow');
 
   return (
-    <ClapContainer
-      setRef={setRef}
-      data-refkey='clapRef'
-      {...getTogglerProps({
-        'aria-pressed': false,
-        handleClick
-      })}
-    >
-      <ClapIcon isClicked={isClicked} />
-
-      <ClapCount
+    <div>
+      <ClapContainer
         setRef={setRef}
-        data-refkey='clapCountRef'
-        {...getCounterProps()}
-      />
-      <UserDefineClapCountComponent {...getCounterProps()} />
+        data-refkey='clapRef'
+        {...getTogglerProps({
+          'aria-pressed': false,
+          handleClick
+        })}
+      >
+        <ClapIcon isClicked={isClicked} />
 
-      <CountTotal
-        setRef={setRef}
-        countTotal={countTotal}
-        data-refkey='clapTotalRef'
-      />
-    </ClapContainer>
+        <ClapCount
+          setRef={setRef}
+          data-refkey='clapCountRef'
+          {...getCounterProps()}
+        />
+        <UserDefineClapCountComponent {...getCounterProps()} />
+
+        <CountTotal
+          setRef={setRef}
+          countTotal={countTotal}
+          data-refkey='clapTotalRef'
+        />
+      </ClapContainer>
+      <section>
+        <button className={userStyles.resetBtn} onClick={reset}>
+          Reset
+        </button>
+        <pre className={userStyles.resetMsg}>
+          {JSON.stringify({ count, countTotal, isClicked })}
+        </pre>
+      </section>
+    </div>
   );
 };
 
