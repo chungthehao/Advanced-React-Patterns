@@ -229,6 +229,11 @@ const useClapState = (
     resetDep: resetRef.current
   };
 };
+useClapState.reducer = internalReducer;
+useClapState.types = {
+  CLAP: 'CLAP',
+  RESET: 'RESET'
+};
 
 /**
  * Custom hook for useEffectAfterMount
@@ -302,22 +307,13 @@ const userInitialState = {
   isClicked: false
 };
 const Usage = () => {
+  const [timesClapped, setTimeClapped] = useState(0);
+  const isClappedTooMuch = timesClapped >= 8;
   const reducer = (state, action) => {
-    const { type, payload } = action;
-    const { count, countTotal } = state;
-    switch (type) {
-      case 'CLAP':
-        return {
-          isClicked: true,
-          count: Math.min(count + 1, 6),
-          countTotal: count < 6 ? countTotal + 1 : countTotal
-        };
-      case 'RESET':
-        return payload;
-
-      default:
-        return state;
+    if (useClapState.types.CLAP === action.type && isClappedTooMuch) {
+      return state;
     }
+    return useClapState.reducer(state, action);
   };
   const [{ clapRef, clapCountRef, clapTotalRef }, setRef] = useDOMRef();
 
@@ -344,11 +340,15 @@ const Usage = () => {
   const [uploadingReset, setUpload] = useState(false); // giống như isLoading riêng cho reset
   useEffectAfterMount(() => {
     setUpload(true);
+    setTimeClapped(0);
     const id = setTimeout(() => setUpload(false), 3000);
     return () => clearTimeout(id);
   }, [resetDep]); // resetDep là 1 cái tào lao gì đó sẽ thay đổi khi user nhấn reset
 
-  const handleClick = () => console.log('%c CLICKED!!!', 'background:yellow');
+  const handleClick = () => {
+    console.log('%c CLICKED!!!', 'background:yellow');
+    setTimeClapped(preVal => preVal + 1);
+  };
 
   return (
     <div>
@@ -380,10 +380,14 @@ const Usage = () => {
           Reset
         </button>
         <pre className={userStyles.resetMsg}>
-          {JSON.stringify({ count, countTotal, isClicked })}
+          {JSON.stringify({ timesClapped, count, countTotal })}
         </pre>
         <pre className={userStyles.resetMsg}>
           {uploadingReset ? `The reset data is uploading... ${resetDep}` : ''}
+        </pre>
+        <pre style={{ color: 'red' }}>
+          {isClappedTooMuch &&
+            `You have clapped ${count} times. Don't be so generous :)`}
         </pre>
       </section>
     </div>
