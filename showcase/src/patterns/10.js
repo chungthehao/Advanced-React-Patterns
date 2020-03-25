@@ -161,7 +161,7 @@ const INITIAL_STATE = {
   countTotal: 56,
   isClicked: false
 };
-const reducer = (state, action) => {
+const internalReducer = (state, action) => {
   const { type, payload } = action;
   const { count, countTotal } = state;
   switch (type) {
@@ -178,7 +178,10 @@ const reducer = (state, action) => {
       return state;
   }
 };
-const useClapState = (initialState = INITIAL_STATE) => {
+const useClapState = (
+  initialState = INITIAL_STATE,
+  reducer = internalReducer
+) => {
   // const [clapState, setClapState] = useState(initialState);
   const [clapState, dispatch] = useReducer(reducer, initialState);
   const { count, countTotal, isClicked } = clapState;
@@ -299,6 +302,23 @@ const userInitialState = {
   isClicked: false
 };
 const Usage = () => {
+  const reducer = (state, action) => {
+    const { type, payload } = action;
+    const { count, countTotal } = state;
+    switch (type) {
+      case 'CLAP':
+        return {
+          isClicked: true,
+          count: Math.min(count + 1, 6),
+          countTotal: count < 6 ? countTotal + 1 : countTotal
+        };
+      case 'RESET':
+        return payload;
+
+      default:
+        return state;
+    }
+  };
   const [{ clapRef, clapCountRef, clapTotalRef }, setRef] = useDOMRef();
 
   const {
@@ -308,7 +328,7 @@ const Usage = () => {
     getCounterProps,
     reset,
     resetDep
-  } = useClapState(userInitialState);
+  } = useClapState(userInitialState, reducer);
 
   const animationTimeline = useClapAnimation({
     clapEl: clapRef,
